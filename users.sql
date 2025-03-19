@@ -2,15 +2,17 @@
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    fullname VARCHAR(100) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL
+    fullname VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    CONSTRAINT users_email_un UNIQUE KEY (email)
 );
 
 -- Table: status
 DROP TABLE IF EXISTS status;
 CREATE TABLE status (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR(50) UNIQUE
+    name VARCHAR(50) NOT NULL,
+    CONSTRAINT status_name_un UNIQUE KEY (email)
 );
 
 -- Table: tasks
