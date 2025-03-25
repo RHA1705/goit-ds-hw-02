@@ -4,8 +4,6 @@ from datetime import datetime, date
 from faker import Faker
 
 
-
-
 NUMBER_STUDENTS = 30
 NUMBER_GROUPS = 3
 

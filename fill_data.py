@@ -3,40 +3,44 @@ from datetime import datetime
 from random import randint, choice
 import sqlite3
 import faker
+import random
 
 
-NUMBER_STUDENTS = 30
-NUMBER_GROUPS = 3
-LECTURES = ['Programming', 'Math', 'SQL', 'MatLab', 'Mechanics', 'ML']
-NUMBER_LECTURERS = 3
-NUMBER_GRADES = 20
+NUMBER_USERS = 30
+NUMBER_TASKS = 50
+STATUS = ['new', 'in progress', 'completed']
 
 
-def generate_fake_data(number_students, number_lecturers):
+def generate_fake_data(number_users, number_tasks):
     '''generate data for database'''
-    fake_students = []  # save student name
-    fake_lecturers = [] # save lecturers names
+    fake_users = []
+    fake_emails = []
+    fake_tasks = []
+    actions = ["Fix", "Install", "Update", "Configure", "Verify", "Develop", "Test", "Optimize", "Prepare", "Implement"]
+    objects = ["server", "database", "application", "software", "network", "login system", "administration panel",
+               "payment module", "API", "reporting system"]
     fake_data = faker.Faker()
 
-    # Generyjemy listę studentów w ilości number_students
-    for _ in range(number_students):
-        fake_students.append(fake_data.name())
+    for _ in range(number_users):
+        fake_users.append(fake_data.name())
+        fake_emails.append(fake_data.email())
 
-    for _ in range(number_lecturers):
-        fake_lecturers.append(fake_data.name())
+    for _ in range(number_tasks):
+        task = f"{random.choice(actions)} {random.choice(objects)}"
+        fake_tasks.append(task)
 
-    return fake_students, fake_lecturers
+    return fake_users, fake_emails, fake_tasks
 
 
-def prepare_data(students, lecturers, groups, lectures, grades_number) -> tuple():
+def prepare_data(users, emails, tasks, status) -> tuple():
     '''prepare data for saving in database'''
-    for_students = []
-    for student in students:
-        for_students.append((student, ))
+    for_users = []
+    for user, email in users:
+        for_users.append((user, email, ))
 
     for_lecturers = []
-    for lecturer in lecturers:
-        for_lecturers.append((lecturer, ))
+    for task in tasks:
+        for_lecturers.append((task, ))
 
     for_groups = []
     for group in range(1, len(students) + 1):
@@ -46,36 +50,31 @@ def prepare_data(students, lecturers, groups, lectures, grades_number) -> tuple(
     for lecture in lectures:
         for_lectures.append((lecture, randint(1, len(lecturers))))
 
-    for_grades = []
-    for _ in range(1, grades_number+1):
-        grade_date = datetime(2023, randint(1, 12), randint(1, 28)).date()
-        for student in range(1, len(students)+1):
-            # Pętla za ilością studentów
-            for_grades.append((randint(3, 5), grade_date, randint(1, 5), student))
+
 
     return for_students, for_lecturers, for_groups, for_lectures, for_grades
 
 
-def insert_data_to_db(students, lecturers, groups, lectures, grades) -> None:
-    # Створимо з'єднання з нашою БД та отримаємо об'єкт курсору для маніпуляцій з даними
+def insert_data_to_db(users, emails, tasks, status) -> None:
+
     with sqlite3.connect('users.db') as con:
 
         cur = con.cursor()
 
 
-        sql_to_students = """INSERT INTO students(student)
+        sql_to_users = """INSERT INTO users(user, email)
+                               VALUES (?, ?)"""
+        cur.executemany(sql_to_users, users, emails)
+
+
+        sql_to_tasks = """INSERT INTO lecturers(task)
                                VALUES (?)"""
-        cur.executemany(sql_to_students, students)
+        cur.executemany(sql_to_tasks, tasks)
 
 
-        sql_to_lecturers = """INSERT INTO lecturers(lecturer)
-                               VALUES (?)"""
-        cur.executemany(sql_to_lecturers, lecturers)
-
-
-        sql_to_groups = """INSERT INTO groups(id, student_id)
-                              VALUES (?, ?)"""
-        cur.executemany(sql_to_groups, groups)
+        sql_to_status = """INSERT INTO groups(status)
+                              VALUES (?)"""
+        cur.executemany(sql_to_status, status)
 
 
         sql_to_lectures = """INSERT INTO lectures(lecture, lecturer_id)
@@ -91,10 +90,8 @@ def insert_data_to_db(students, lecturers, groups, lectures, grades) -> None:
         con.commit()
 
 if __name__ == '__main__':
-    students, lecturers, groups, lectures, grades = prepare_data(*generate_fake_data(NUMBER_STUDENTS,
-                                                                NUMBER_LECTURERS), NUMBER_GROUPS,
-                                                                 LECTURES, NUMBER_GRADES)
+    users, emails, tasks, status = prepare_data(*generate_fake_data(NUMBER_USERS, NUMBER_TASKS), STATUS)
     # print(companies)
     # print(employees)
-    # print(posts)
-    insert_data_to_db(students, lecturers, groups, lectures, grades)
+    # print(posts)w
+    insert_data_to_db(users, status, tasks)

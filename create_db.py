@@ -1,7 +1,7 @@
 import sqlite3
 
 def create_db():
-    with open('users.sql', 'r') as f:
+    with open('tasks.sql', 'r') as f:
         sql = f.read()
 
     with sqlite3.connect('users.db') as con:

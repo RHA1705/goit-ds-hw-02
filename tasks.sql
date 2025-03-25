@@ -4,7 +4,7 @@ CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     fullname VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    CONSTRAINT users_email_un UNIQUE KEY (email)
+    CONSTRAINT users_email_un UNIQUE (email)
 );
 
 -- Table: status
@@ -12,7 +12,7 @@ DROP TABLE IF EXISTS status;
 CREATE TABLE status (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(50) NOT NULL,
-    CONSTRAINT status_name_un UNIQUE KEY (email)
+    CONSTRAINT status_name_un UNIQUE (name)
 );
 
 -- Table: tasks
@@ -27,6 +27,6 @@ CREATE TABLE tasks (
         ON DELETE SET NULL
         ON UPDATE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id)
-        ON DELETE SET NULL
+        ON DELETE CASCADE
         ON UPDATE CASCADE
 );
