@@ -14,84 +14,76 @@ STATUS = ['new', 'in progress', 'completed']
 def generate_fake_data(number_users, number_tasks):
     '''generate data for database'''
     fake_users = []
-    fake_emails = []
     fake_tasks = []
     actions = ["Fix", "Install", "Update", "Configure", "Verify", "Develop", "Test", "Optimize", "Prepare", "Implement"]
     objects = ["server", "database", "application", "software", "network", "login system", "administration panel",
                "payment module", "API", "reporting system"]
+
     fake_data = faker.Faker()
 
-    for _ in range(number_users):
-        fake_users.append(fake_data.name())
-        fake_emails.append(fake_data.email())
+    for user in range(number_users):
+
+        fake_users.append((fake_data.name(), fake_data.email()))
+
 
     for _ in range(number_tasks):
-        task = f"{random.choice(actions)} {random.choice(objects)}"
-        fake_tasks.append(task)
+        task_title = f"{random.choice(actions)} {random.choice(objects)}"
+        fake_tasks.append(task_title)
 
-    return fake_users, fake_emails, fake_tasks
+    return fake_users, fake_tasks
 
 
-def prepare_data(users, emails, tasks, status) -> tuple():
+def prepare_data(users, tasks, status) -> tuple():
     '''prepare data for saving in database'''
+    descriptions = ["Requires post-completion testing.",
+                    "Log check required after implementation.",
+                    "Changes should be consulted with the IT team.",
+                    "Possible compatibility issues, requires thorough analysis.",
+                    "Urgent task - high risk of failure."]
     for_users = []
-    for user, email in users:
-        for_users.append((user, email, ))
+    for user in users:
+        for_users.append((user, ))
 
-    for_lecturers = []
+    for_tasks = []
     for task in tasks:
-        for_lecturers.append((task, ))
+        for_tasks.append((task, choice(descriptions), randint(0, len(STATUS)+1), randint(1, NUMBER_USERS)+1), )
 
-    for_groups = []
-    for group in range(1, len(students) + 1):
-        for_groups.append((randint(1, groups), group))
+    for_status = []
+    for s in status:
+        for_status.append((s,))
 
-    for_lectures = []
-    for lecture in lectures:
-        for_lectures.append((lecture, randint(1, len(lecturers))))
-
-
-
-    return for_students, for_lecturers, for_groups, for_lectures, for_grades
+    print(for_users)
+    print(for_tasks)
+    return for_users, for_tasks, for_status
 
 
-def insert_data_to_db(users, emails, tasks, status) -> None:
+def insert_data_to_db(users, tasks, status) -> None:
 
-    with sqlite3.connect('users.db') as con:
+    with sqlite3.connect('tasks.db') as con:
 
         cur = con.cursor()
 
 
-        sql_to_users = """INSERT INTO users(user, email)
+        sql_to_users = """INSERT INTO users(fullname, email)
                                VALUES (?, ?)"""
-        cur.executemany(sql_to_users, users, emails)
+        cur.executemany(sql_to_users, users)
 
 
-        sql_to_tasks = """INSERT INTO lecturers(task)
-                               VALUES (?)"""
+        sql_to_tasks = """INSERT INTO tasks(title, description, status_id, user_id)
+                               VALUES (?, ?, ?, ?)"""
         cur.executemany(sql_to_tasks, tasks)
 
 
-        sql_to_status = """INSERT INTO groups(status)
+        sql_to_status = """INSERT INTO status(name)
                               VALUES (?)"""
         cur.executemany(sql_to_status, status)
-
-
-        sql_to_lectures = """INSERT INTO lectures(lecture, lecturer_id)
-                              VALUES (?, ?)"""
-        cur.executemany(sql_to_lectures, lectures)
-
-
-        sql_to_grades = """INSERT INTO grades(grade, date_of, lecture_id, student_id)
-                              VALUES (?, ?, ?, ?)"""
-        cur.executemany(sql_to_grades, grades)
 
         # Фіксуємо наші зміни в БД
         con.commit()
 
 if __name__ == '__main__':
-    users, emails, tasks, status = prepare_data(*generate_fake_data(NUMBER_USERS, NUMBER_TASKS), STATUS)
+    users, tasks, status = prepare_data(*generate_fake_data(NUMBER_USERS, NUMBER_TASKS), STATUS)
     # print(companies)
     # print(employees)
     # print(posts)w
-    insert_data_to_db(users, status, tasks)
+    insert_data_to_db(users, tasks, status)

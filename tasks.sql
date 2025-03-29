@@ -21,8 +21,8 @@ CREATE TABLE tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title VARCHAR(100),
     description TEXT,
-    status_id INTEGER,
-    user_id INTEGER,
+    status_id INTEGER DEFAULT NULL,
+    user_id INTEGER DEFAULT NULL,
     FOREIGN KEY (status_id) REFERENCES status (id)
         ON DELETE SET NULL
         ON UPDATE CASCADE,
