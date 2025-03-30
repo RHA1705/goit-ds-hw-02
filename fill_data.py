@@ -21,9 +21,11 @@ def generate_fake_data(number_users, number_tasks):
 
     fake_data = faker.Faker()
 
-    for user in range(number_users):
-
-        fake_users.append((fake_data.name(), fake_data.email()))
+    for u in range(number_users):
+        fullname = fake_data.name()
+        email = fake_data.email()
+        user_data = (fullname, email)
+        fake_users.append(user_data)
 
 
     for _ in range(number_tasks):
@@ -42,7 +44,7 @@ def prepare_data(users, tasks, status) -> tuple():
                     "Urgent task - high risk of failure."]
     for_users = []
     for user in users:
-        for_users.append((user, ))
+        for_users.append(user, )
 
     for_tasks = []
     for task in tasks:
@@ -52,8 +54,6 @@ def prepare_data(users, tasks, status) -> tuple():
     for s in status:
         for_status.append((s,))
 
-    print(for_users)
-    print(for_tasks)
     return for_users, for_tasks, for_status
 
 
