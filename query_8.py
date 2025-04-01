@@ -4,27 +4,22 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--name', '-n',
-                    help='Please enter lecturer full name')
+parser.add_argument('--email', '-e', help='Please enter email address')
 args = vars(parser.parse_args())
 
-lecturer = args.get("name")
+email = args.get("email")
 
-def execute_query(sql: str, lecturer) -> list:
-    with sqlite3.connect('users.db') as con:
+def execute_query(sql: str, email) -> list:
+    with sqlite3.connect('tasks.db') as con:
         cur = con.cursor()
-        cur.execute(sql, (lecturer,))
+        cur.execute(sql, (email,))
         return cur.fetchall()
 
 sql = """
-SELECT round(avg(g.grade), 2) avg_garde, l.lecture, lr.lecturer
-FROM grades g 
-	JOIN lectures l ON g.lecture_id = l.id
-	JOIN groups gr ON g.student_id = gr.student_id
-	JOIN lecturers lr ON l.lecturer_id = lr.id
-WHERE lr.lecturer = ?
-GROUP BY l.lecture
+SELECT *
+FROM users
+WHERE email = ?
 ;
 """
 
-print(execute_query(sql, lecturer))
+print(execute_query(sql, email))

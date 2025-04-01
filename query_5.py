@@ -4,24 +4,26 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--name', '-n', 
-                    help='Please enter lecturer full name')
+parser.add_argument('--task', '-t', help='Please enter task title')
+parser.add_argument('--user', '-u', help='Please enter user name')
 args = vars(parser.parse_args())
 
-lecturer = args.get("name")
+task_title = args.get("task")
+user_fullname = args.get("user")
 
-def execute_query(sql: str, lecturer) -> list:
-    with sqlite3.connect('users.db') as con:
+def execute_query(sql: str, task_title, user_fullname) -> list:
+    with sqlite3.connect('tasks.db') as con:
         cur = con.cursor()
-        cur.execute(sql, (lecturer,))
+        cur.execute(sql, (task_title, user_fullname))
         return cur.fetchall()
 
 sql = """
-SELECT l.lecture, lr.lecturer
-FROM lectures l
-	JOIN lecturers lr ON l.lecturer_id = lr.id
-WHERE lr.lecturer = ?
+INSERT INTO tasks(title, description, status_id, user_id)
+VALUES (?, 
+        NULL, 
+        NULL,
+        (SELECT id FROM users WHERE fullname = ?))
 ;
 """
 
-print(execute_query(sql, lecturer))
+print(execute_query(sql, task_title, user_fullname))

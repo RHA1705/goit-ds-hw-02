@@ -9,8 +9,8 @@ def execute_query(sql: str) -> list:
 
 sql = """
 SELECT *
-FROM tasks
-WHERE status_id IN (SELECT id FROM status WHERE name NOT LIKE 'complete')
+FROM tasks 
+WHERE description IS NULL
 ;
 """
 

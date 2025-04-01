@@ -4,30 +4,23 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--student', '-s',
-                    help='Please enter student full name')
-parser.add_argument('--lecturer', '-l',
-                    help='Please enter lecturer full name')
+parser.add_argument('--status', '-s', help='Please enter status name')
 args = vars(parser.parse_args())
 
-student = args.get("student")
-lecturer = args.get("lecturer")
+status = args.get("status")
 
-def execute_query(sql: str, student, lecturer) -> list:
-    with sqlite3.connect('users.db') as con:
+def execute_query(sql: str, status) -> list:
+    with sqlite3.connect('tasks.db') as con:
         cur = con.cursor()
-        cur.execute(sql, (student, lecturer,))
+        cur.execute(sql, (status,))
         return cur.fetchall()
 
 sql = """
-SELECT l.lecture
-FROM lectures l 
-	JOIN grades g ON g.lecture_id = l.id
-	JOIN students s ON g.student_id = s.id
-	JOIN lecturers lr ON l.lecturer_id = lr.id
-WHERE s.student = ? AND lr.lecturer = ?
-GROUP BY l.lecture
-;
+SELECT COUNT(status_id) as Number_of_tasks, s.name
+FROM tasks 
+    JOIN status s ON s.id = tasks.status_id
+WHERE s.name = ?
+GROUP BY status_id;
 """
 
-print(execute_query(sql, student, lecturer))
+print(execute_query(sql, status))

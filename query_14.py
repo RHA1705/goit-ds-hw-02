@@ -8,10 +8,11 @@ def execute_query(sql: str) -> list:
         return cur.fetchall()
 
 sql = """
-SELECT *
-FROM tasks
-WHERE status_id IN (SELECT id FROM status WHERE name NOT LIKE 'complete')
-;
+SELECT u.fullname, COUNT(t.user_id) as number_of_tasks
+FROM users u 
+    LEFT JOIN tasks t ON u.id = t.user_id
+GROUP BY u.id
+ORDER BY number_of_tasks DESC;
 """
 
 print(execute_query(sql))

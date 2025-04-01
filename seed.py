@@ -1,66 +1,89 @@
-from sqlite3 import Error
-from faker import Faker
-
-from connect import create_connection, database
-
-
-def create_user(conn, user):
-    """
-    Create a new user into the users table
-    :param conn:
-    :param user:
-    :return: project id
-    """
-    sql = '''
-    INSERT INTO projects(fullname,email) VALUES(?,?);
-    '''
-    cur = conn.cursor()
-    try:
-        cur.execute(sql, user)
-        conn.commit()
-    except Error as e:
-        print(e)
-    finally:
-        cur.close()
-
-    return cur.lastrowid
+'''Fill tabeles'''
+from datetime import datetime
+from random import randint, choice
+import sqlite3
+import faker
+import random
 
 
+NUMBER_USERS = 30
+NUMBER_TASKS = 50
+STATUS = ['new', 'in progress', 'completed']
 
-def create_task(conn, task):
-    """
-    Create a new task
-    :param conn:
-    :param task:
-    :return:
-    """
 
-    sql = '''
-    INSERT INTO tasks(name,priority,status,project_id,begin_date,end_date) VALUES(?,?,?,?,?,?);
-    '''
-    cur = conn.cursor()
-    try:
-        cur.execute(sql, task)
-        conn.commit()
-    except Error as e:
-        print(e)
-    finally:
-        cur.close()
+def generate_fake_data(number_users, number_tasks):
+    '''generate data for database'''
+    fake_users = []
+    fake_tasks = []
+    actions = ["Fix", "Install", "Update", "Configure", "Verify", "Develop", "Test", "Optimize", "Prepare", "Implement"]
+    objects = ["server", "database", "application", "software", "network", "login system", "administration panel",
+               "payment module", "API", "reporting system"]
 
-    return cur.lastrowid
+    fake_data = faker.Faker()
+
+    for u in range(number_users):
+        fullname = fake_data.name()
+        email = fake_data.email()
+        user_data = (fullname, email)
+        fake_users.append(user_data)
+
+
+    for _ in range(number_tasks):
+        task_title = f"{random.choice(actions)} {random.choice(objects)}"
+        fake_tasks.append(task_title)
+
+    return fake_users, fake_tasks
+
+
+def prepare_data(users, tasks, status) -> tuple():
+    '''prepare data for saving in database'''
+    descriptions = ["Requires post-completion testing.",
+                    "Log check required after implementation.",
+                    "Changes should be consulted with the IT team.",
+                    "Possible compatibility issues, requires thorough analysis.",
+                    "Urgent task - high risk of failure."]
+    for_users = []
+    for user in users:
+        for_users.append(user, )
+
+    for_tasks = []
+    for task in tasks:
+        for_tasks.append((task, choice(descriptions), randint(0, len(STATUS)+1), randint(1, NUMBER_USERS)+1), )
+
+    for_status = []
+    for s in status:
+        for_status.append((s,))
+
+    return for_users, for_tasks, for_status
+
+
+def insert_data_to_db(users, tasks, status) -> None:
+
+    with sqlite3.connect('tasks.db') as con:
+
+        cur = con.cursor()
+
+
+        sql_to_users = """INSERT INTO users(fullname, email)
+                               VALUES (?, ?)"""
+        cur.executemany(sql_to_users, users)
+
+
+        sql_to_tasks = """INSERT INTO tasks(title, description, status_id, user_id)
+                               VALUES (?, ?, ?, ?)"""
+        cur.executemany(sql_to_tasks, tasks)
+
+
+        sql_to_status = """INSERT INTO status(name)
+                              VALUES (?)"""
+        cur.executemany(sql_to_status, status)
+
+        # Фіксуємо наші зміни в БД
+        con.commit()
 
 if __name__ == '__main__':
-    with create_connection(database) as conn:
-# create a new project
-        project = ('Cool App with SQLite & Python', '2022-01-01', '2022-01-30')
-        project_id = create_user(conn, project)
-        print(project_id)
-
-# tasks
-        task_1 = ('Analyze the requirements of the app', 1, True, project_id, '2022-01-01', '2022-01-02')
-        task_2 = ('Confirm with user about the top requirements', 1, False, project_id, '2022-01-03', '2022-01-05')
-
-# create tasks
-        print(create_task(conn, task_1))
-        print(create_task(conn, task_2))
-
+    users, tasks, status = prepare_data(*generate_fake_data(NUMBER_USERS, NUMBER_TASKS), STATUS)
+    # print(companies)
+    # print(employees)
+    # print(posts)w
+    insert_data_to_db(users, tasks, status)

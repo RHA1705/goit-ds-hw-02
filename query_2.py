@@ -4,27 +4,24 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--lecture', '-l', help='Please enter lecture from the list: Programming, Math, SQL, MatLab, Mechanics, ML')
+parser.add_argument('--status', '-s', help='Please enter task status')
 args = vars(parser.parse_args())
 
-lecture = args.get("lecture")
+status = args.get("status")
 
-def execute_query(sql: str, lecture) -> list:
-    with sqlite3.connect('users.db') as con:
+def execute_query(sql: str, status) -> list:
+    with sqlite3.connect('tasks.db') as con:
         cur = con.cursor()
-        cur.execute(sql, (lecture,))
+        cur.execute(sql, (status,))
         return cur.fetchall()
 
 sql = """
-SELECT ROUND(AVG(g.grade), 2) as avg_grade, l.lecture, s.student
-FROM grades g 
-	JOIN lectures l ON g.lecture_id = l.id 
-	JOIN students s ON g.student_id = s.id 
-WHERE l.lecture = ?
-GROUP BY s.student 
-ORDER BY avg_grade DESC 
-LIMIT 1
+SELECT *
+FROM tasks
+WHERE status_id IN (SELECT id 
+                    FROM status 
+                    WHERE name = ?)
 ;
 """
 
-print(execute_query(sql, lecture))
+print(execute_query(sql, status))

@@ -4,26 +4,24 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--name', '-n',
-                    help='Please enter student full name')
+parser.add_argument('--old', '-o', help='Please enter user old name')
+parser.add_argument('--new', '-n', help='Please enter user new name')
 args = vars(parser.parse_args())
 
-student = args.get("name")
+old_name = args.get("old")
+new_name = args.get("new")
 
-def execute_query(sql: str, student) -> list:
-    with sqlite3.connect('users.db') as con:
+def execute_query(sql: str, old_name, new_name) -> list:
+    with sqlite3.connect('tasks.db') as con:
         cur = con.cursor()
-        cur.execute(sql, (student,))
+        cur.execute(sql, (new_name, old_name))
         return cur.fetchall()
 
 sql = """
-SELECT l.lecture
-FROM lectures l 
-	JOIN grades g ON g.lecture_id = l.id
-	JOIN students s ON g.student_id = s.id
-WHERE s.student = ?
-GROUP BY g.lecture_id
+UPDATE users
+SET fullname = ?
+WHERE fullname = ?
 ;
 """
 
-print(execute_query(sql, student))
+print(execute_query(sql, old_name, new_name))
